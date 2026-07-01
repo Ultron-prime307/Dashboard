@@ -47,6 +47,18 @@
 
   .main{padding:28px 30px 36px;}
   .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px;}
+  .topbar-left{flex:0 0 auto}
+  .topbar-center{flex:1 1 420px;display:flex;justify-content:center}
+  .topbar-right{flex:0 0 auto;display:flex;align-items:center;gap:12px}
+  .search-box{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);padding:10px 14px;border-radius:999px;box-shadow:var(--shadow-soft);width:520px;max-width:75%;}
+  .search-box input{border:0;outline:none;background:transparent;flex:1;font-size:14px}
+  .search-icon{opacity:0.6}
+  .kbd{background:var(--surface-2);padding:6px 8px;border-radius:8px;border:1px solid var(--border);font-size:12px;color:var(--muted)}
+  .profile{display:flex;align-items:center;gap:10px;margin-left:12px}
+  .avatar{width:40px;height:40px;border-radius:999px;background:linear-gradient(135deg,var(--accent),#6d8cff);color:#fff;display:grid;place-items:center;font-weight:700}
+  .profile-info{display:flex;flex-direction:column;font-size:12px}
+  .profile-info .name{font-weight:700}
+  .profile-info .email{color:var(--muted);font-size:11px}
   .topbar .eyebrow{margin:0 0 4px;font-size:11px;text-transform:uppercase;letter-spacing:0.18em;color:var(--muted);}
   .topbar h1{margin:0;font-family:'Fraunces',serif;font-size:30px;}
   .topbar-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
@@ -79,12 +91,12 @@
   .mini-card .label{font-size:11px;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);margin-bottom:6px;}
   .mini-card .value{font-size:22px;font-weight:700;color:var(--ink);}
 
-  .summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px;}
+  .summary-grid{display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr;gap:14px;margin-bottom:18px;align-items:stretch}
   .summary-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:16px;box-shadow:var(--shadow-soft);}
   .summary-card .label{font-size:11px;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);margin-bottom:8px;}
   .summary-card .value{font-size:24px;font-weight:700;}
-  .summary-card.accent{background:linear-gradient(135deg, rgba(255,138,61,0.12), rgba(255,138,61,0.04));}
-  .summary-card.teal{background:linear-gradient(135deg, rgba(79,163,160,0.12), rgba(79,163,160,0.04));}
+  .summary-card.accent{background:linear-gradient(135deg, rgba(79,124,255,0.18), rgba(79,124,255,0.06));color:#fff}
+  .summary-card.teal{background:linear-gradient(135deg, rgba(34,197,94,0.12), rgba(34,197,94,0.04));}
 
   .board-panel{background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:18px;box-shadow:var(--shadow);}
   .board-toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
@@ -118,6 +130,12 @@
   .icon-btn{background:none;border:none;cursor:pointer;font-size:13px;color:#8a8574;padding:2px 4px;}
   .icon-btn:hover{color:var(--ink);} 
   .empty-hint{color:var(--muted);font-size:12px;text-align:center;padding:20px 4px;border:1px dashed var(--border);border-radius:12px;}
+  .projects-list{display:grid;gap:12px;}
+  .project-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px;box-shadow:var(--shadow-soft);transition:transform .18s ease,box-shadow .18s ease;}
+  .project-card:hover{transform:translateY(-4px);box-shadow:0 18px 36px rgba(15,23,42,0.06);}
+  .project-meta{font-size:13px;color:var(--muted);margin-top:8px;}
+  .team-row{display:flex;gap:10px;align-items:center}
+  .avatar-sm{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,var(--accent),#6d8cff);color:#fff;font-weight:700}
   .overlay{position:fixed;inset:0;background:rgba(10,12,14,0.65);display:none;align-items:center;justify-content:center;z-index:50;}
   .overlay.open{display:flex;}
   .modal{background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:24px;width:440px;max-width:92vw;box-shadow:var(--shadow);}
@@ -158,20 +176,31 @@
 
   <main class="main">
     <header class="topbar">
-      <div>
+      <div class="topbar-left">
         <p class="eyebrow">Product operations</p>
-        <h1>Team workboard</h1>
+        <h1>Dashboard</h1>
       </div>
-      <div class="topbar-actions">
-        <div class="shortcut-hint">N new • / search</div>
-        <select id="sortSelect" style="width:120px;">
-          <option value="manual">Manual</option>
-          <option value="due">Due date</option>
-          <option value="priority">Priority</option>
-          <option value="title">Title</option>
-        </select>
-        <input type="text" id="searchInput" placeholder="Search tasks…" style="width:220px;">
-        <button class="btn primary" id="newTaskBtn">+ New task</button>
+      <div class="topbar-center">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="searchInput" placeholder="Search task" />
+          <span class="kbd">⌘F</span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="actions">
+          <button class="btn primary" id="newTaskBtn">+ New task</button>
+          <button class="btn" id="addProjectBtn">+ Add Project</button>
+          <button class="btn ghost" id="importBtn">Import Data</button>
+          <input type="file" id="importFile" accept="application/json" style="display:none">
+        </div>
+        <div class="profile">
+          <div class="avatar">TM</div>
+          <div class="profile-info">
+            <div class="name">Totok Michael</div>
+            <div class="email">tmichael20@mail.com</div>
+          </div>
+        </div>
       </div>
     </header>
 
@@ -221,6 +250,23 @@
       </div>
     </section>
 
+    <section class="content-grid" style="display:grid;grid-template-columns:1.6fr .9fr;gap:14px;margin-bottom:18px;">
+      <div class="summary-card" style="padding:18px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;"><strong>Project Analytics</strong><div class="muted">Weekly</div></div>
+        <svg id="spark" width="100%" height="80" style="margin-top:12px"></svg>
+      </div>
+      <div style="display:grid;grid-template-rows:1fr 1fr;gap:14px;">
+        <div class="summary-card">
+          <div style="display:flex;justify-content:space-between;align-items:center;"><strong>Project Progress</strong><div class="muted">Overall</div></div>
+          <svg id="donut" width="100%" height="120" style="margin-top:8px"></svg>
+        </div>
+        <div class="summary-card">
+          <div style="display:flex;justify-content:space-between;align-items:center;"><strong>Team Collaboration</strong><button class="btn" id="addMemberBtn">+ Add Member</button></div>
+          <div id="teamList" style="margin-top:12px;display:flex;flex-direction:column;gap:8px;"></div>
+        </div>
+      </div>
+    </section>
+
     <section class="board-panel">
       <div class="board-toolbar">
         <div class="toolbar-group">
@@ -229,7 +275,35 @@
         </div>
         <button class="btn ghost" id="clearFilters">Reset</button>
       </div>
-      <div class="board" id="board"></div>
+      <div style="display:grid;grid-template-columns:2fr 360px;gap:14px;align-items:start;">
+        <div>
+          <div class="board" id="board"></div>
+        </div>
+        <aside style="display:flex;flex-direction:column;gap:12px;">
+          <div class="summary-card" style="padding:12px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;"><strong>Project</strong><button class="btn" id="newProjectSmall">+ New</button></div>
+            <div id="miniProjectList" style="margin-top:10px;display:flex;flex-direction:column;gap:8px;"></div>
+          </div>
+          <div class="summary-card">
+            <div style="display:flex;justify-content:space-between;align-items:center;"><strong>Reminders</strong><div class="muted">Today</div></div>
+            <div style="margin-top:12px">Meeting with Arc Company · 02:00 pm</div>
+            <button class="btn primary" id="startMeetingBtn" style="margin-top:10px">Start Meeting</button>
+          </div>
+          <div class="summary-card">
+            <div style="display:flex;justify-content:space-between;align-items:center;"><strong>Time Tracker</strong><div class="muted">Live</div></div>
+            <div id="timeTrackerDisplay" style="font-size:24px;font-weight:700;margin-top:12px">00:00:00</div>
+            <div style="display:flex;gap:8px;margin-top:10px;"><button class="btn" id="timePlay">▶</button><button class="btn ghost" id="timePause">II</button></div>
+          </div>
+        </aside>
+      </div>
+    </section>
+    
+    <section id="projectsList" class="board-panel" style="display:none; margin-top:18px;">
+      <div class="board-toolbar">
+        <div class="toolbar-group"><strong>Projects</strong></div>
+        <div></div>
+      </div>
+      <div id="projectsContainer" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;"></div>
     </section>
   </main>
 </div>
@@ -282,6 +356,25 @@
     <div class="modal-actions">
       <button class="btn ghost" id="cancelBtn">Cancel</button>
       <button class="btn primary" id="saveBtn">Save task</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="projectOverlay">
+  <div class="modal">
+    <h3 id="projectModalTitle">New project</h3>
+    <input type="hidden" id="projectId">
+    <div class="field">
+      <label>Project name</label>
+      <input type="text" id="pName" placeholder="e.g. Launch redesign">
+    </div>
+    <div class="field">
+      <label>Description</label>
+      <textarea id="pDesc" placeholder="Optional description"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn ghost" id="projectCancel">Cancel</button>
+      <button class="btn primary" id="projectSave">Save project</button>
     </div>
   </div>
 </div>
@@ -356,9 +449,13 @@ async function loadTasks(){
     } catch (fallbackError) {
       tasks = seedTasks();
     }
-  }
+        renderProjects();
+        renderMiniProjectList();
+        renderAnalytics();
+        renderDonut();
+        renderTeam();
   loadPreferences();
-  document.getElementById('sortSelect').value = sortMode;
+  const sEl = document.getElementById('sortSelect'); if(sEl) sEl.value = sortMode;
   render();
 }
 
@@ -528,11 +625,13 @@ function openModal(task){
 }
 function closeModal(){ document.getElementById('overlay').classList.remove('open'); }
 
-document.getElementById('newTaskBtn').addEventListener('click', ()=> openModal(null));
-document.getElementById('cancelBtn').addEventListener('click', closeModal);
-document.getElementById('overlay').addEventListener('click', e=>{ if(e.target.id==='overlay') closeModal(); });
+function on(id, ev, fn){ const el=document.getElementById(id); if(el) el.addEventListener(ev, fn); }
 
-document.getElementById('saveBtn').addEventListener('click', ()=>{
+on('newTaskBtn','click', ()=> openModal(null));
+on('cancelBtn','click', closeModal);
+const _overlay = document.getElementById('overlay'); if(_overlay) _overlay.addEventListener('click', e=>{ if(e.target.id==='overlay') closeModal(); });
+
+on('saveBtn','click', ()=>{
   const title = document.getElementById('fTitle').value.trim();
   if(!title){ document.getElementById('fTitle').focus(); return; }
   const data = {
@@ -555,20 +654,11 @@ document.getElementById('saveBtn').addEventListener('click', ()=>{
   render();
 });
 
-document.getElementById('searchInput').addEventListener('input', render);
-document.getElementById('priorityFilter').addEventListener('change', render);
-document.getElementById('tagFilter').addEventListener('change', render);
-document.getElementById('sortSelect').addEventListener('change', e=>{
-  sortMode = e.target.value;
-  savePreferences();
-  render();
-});
-document.getElementById('clearFilters').addEventListener('click', ()=>{
-  document.getElementById('searchInput').value = '';
-  document.getElementById('priorityFilter').value = 'all';
-  document.getElementById('tagFilter').value = 'all';
-  render();
-});
+on('searchInput','input', render);
+on('priorityFilter','change', render);
+on('tagFilter','change', render);
+on('sortSelect','change', e=>{ sortMode = e.target.value; savePreferences(); render(); });
+on('clearFilters','click', ()=>{ const si=document.getElementById('searchInput'); if(si) si.value=''; const pf=document.getElementById('priorityFilter'); if(pf) pf.value='all'; const tf=document.getElementById('tagFilter'); if(tf) tf.value='all'; render(); });
 
 document.addEventListener('keydown', e=>{
   const tag = document.activeElement?.tagName;
@@ -587,7 +677,7 @@ document.addEventListener('keydown', e=>{
   }
 });
 
-document.getElementById('fTitle').addEventListener('keydown', e=>{
+on('fTitle','keydown', e=>{
   if(e.key === 'Enter' && !e.shiftKey){
     e.preventDefault();
     document.getElementById('saveBtn').click();
@@ -595,6 +685,165 @@ document.getElementById('fTitle').addEventListener('keydown', e=>{
 });
 
 loadTasks();
+// --- Projects and import handlers ---
+let projects = [];
+function loadProjects(){
+  try{ const raw = window.localStorage.getItem('donezo-projects'); projects = raw ? JSON.parse(raw) : seedProjects(); }
+  catch(e){ projects = seedProjects(); }
+}
+function saveProjects(){ try{ window.localStorage.setItem('donezo-projects', JSON.stringify(projects)); } catch(e){ console.warn('project save failed', e); } }
+function seedProjects(){ return [{id: 'p1', name:'Design system refresh', desc:'Refresh components and tokens', status:'active'},{id:'p2', name:'Landing page', desc:'Improve conversion flow', status:'planning'}]; }
+
+function renderProjects(){
+  const container = document.getElementById('projectsContainer');
+  container.innerHTML = '';
+  projects.forEach(p=>{
+    const el = document.createElement('div'); el.className='project-card';
+    el.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;"><strong>${escapeHtml(p.name)}</strong><button class="btn ghost" data-pid="${p.id}">Open</button></div><div class="project-meta">${escapeHtml(p.desc||'—')}</div>`;
+    el.querySelector('button')?.addEventListener('click', ()=>{ alert('Project: '+p.name); });
+    container.appendChild(el);
+  });
+}
+
+function renderMiniProjectList(){
+  const el = document.getElementById('miniProjectList'); if(!el) return;
+  el.innerHTML = '';
+  projects.slice(0,6).forEach(p=>{
+    const row = document.createElement('div'); row.style.display='flex'; row.style.justifyContent='space-between'; row.style.alignItems='center';
+    row.innerHTML = `<div style="font-weight:600">${escapeHtml(p.name)}</div><div style="color:var(--muted);font-size:12px">›</div>`;
+    row.addEventListener('click', ()=>{ alert('Open project '+p.name); });
+    el.appendChild(row);
+  });
+}
+
+function renderAnalytics(){
+  const svg = document.getElementById('spark'); if(!svg) return;
+  // simple spark: show number of tasks per day for last 7 days
+  const days = 7; const counts = new Array(days).fill(0);
+  tasks.forEach(t=>{ if(t.due){ const d=new Date(t.due+'T00:00:00'); const diff=Math.floor((d - new Date())/86400000); const idx = days-1 - Math.min(Math.max(diff+3,0),days-1); counts[idx] = (counts[idx]||0)+1; }});
+  const w = svg.clientWidth; const h = 80; svg.innerHTML='';
+  const max = Math.max(...counts,1);
+  const gap = 6; const bw = (w - (days-1)*gap)/days;
+  counts.forEach((c,i)=>{ const rect = document.createElementNS('http://www.w3.org/2000/svg','rect'); const rh = Math.round((c/max)* (h-10)); rect.setAttribute('x', i*(bw+gap)); rect.setAttribute('y', h-rh); rect.setAttribute('width', bw-2); rect.setAttribute('height', rh); rect.setAttribute('fill', 'rgba(79,124,255,0.9)'); svg.appendChild(rect); });
+}
+
+function renderDonut(){
+  const svg = document.getElementById('donut'); if(!svg) return;
+  const total = tasks.length || 1; const done = tasks.filter(t=>t.status==='done').length; const pct = Math.round((done/total)*100);
+  const size = 120; const cx = size/2; const cy = 60; const r=36; svg.innerHTML='';
+  const bg = document.createElementNS('http://www.w3.org/2000/svg','circle'); bg.setAttribute('cx',cx); bg.setAttribute('cy',cy); bg.setAttribute('r',r); bg.setAttribute('fill','none'); bg.setAttribute('stroke','#eef2ff'); bg.setAttribute('stroke-width','14'); svg.appendChild(bg);
+  const fg = document.createElementNS('http://www.w3.org/2000/svg','circle'); fg.setAttribute('cx',cx); fg.setAttribute('cy',cy); fg.setAttribute('r',r); fg.setAttribute('fill','none'); fg.setAttribute('stroke','rgba(79,124,255,0.9)'); fg.setAttribute('stroke-width','14'); fg.setAttribute('stroke-dasharray', 2*Math.PI*r); fg.setAttribute('stroke-dashoffset', 2*Math.PI*r * (1 - pct/100)); fg.setAttribute('transform', `rotate(-90 ${cx} ${cy})`); svg.appendChild(fg);
+  const txt = document.createElementNS('http://www.w3.org/2000/svg','text'); txt.setAttribute('x',cx); txt.setAttribute('y',cy+6); txt.setAttribute('text-anchor','middle'); txt.setAttribute('font-size','20'); txt.setAttribute('font-weight','700'); txt.setAttribute('fill', 'var(--ink)'); txt.textContent = pct + '%'; svg.appendChild(txt);
+}
+
+function renderTeam(){
+  const el = document.getElementById('teamList'); if(!el) return; el.innerHTML='';
+  const assignees = [...new Set(tasks.map(t=>t.assignee).filter(Boolean))];
+  assignees.forEach(a=>{
+    const row = document.createElement('div'); row.className='team-row';
+    const avatar = document.createElement('div'); avatar.className='avatar-sm'; avatar.textContent = a.slice(0,1).toUpperCase();
+    const info = document.createElement('div'); info.style.flex='1'; info.innerHTML = `<div style="font-weight:700">${escapeHtml(a)}</div><div style="font-size:12px;color:var(--muted)">${tasks.filter(t=>t.assignee===a).length} tasks</div>`;
+    row.appendChild(avatar); row.appendChild(info); el.appendChild(row);
+  });
+}
+
+// Meeting / time tracker logic
+let meetingInterval = null;
+let meetingStart = 0;
+let meetingElapsed = 0; // ms
+
+function formatTime(ms){
+  const s = Math.floor(ms/1000); const h = Math.floor(s/3600); const m = Math.floor((s%3600)/60); const sec = s%60;
+  return [h,m,sec].map(x=>String(x).padStart(2,'0')).join(':');
+}
+
+function updateTimeDisplay(){
+  const el = document.getElementById('timeTrackerDisplay'); if(!el) return;
+  const now = Date.now(); const elapsed = meetingStart ? (now - meetingStart + meetingElapsed) : meetingElapsed;
+  el.textContent = formatTime(elapsed);
+}
+
+function toggleMeeting(){
+  const btn = document.getElementById('startMeetingBtn'); if(!btn) return;
+  if(!meetingInterval){
+    // start
+    meetingStart = Date.now();
+    meetingInterval = setInterval(updateTimeDisplay, 500);
+    btn.textContent = 'End Meeting';
+    btn.classList.add('ghost'); btn.classList.remove('primary');
+  } else {
+    // stop
+    clearInterval(meetingInterval); meetingInterval = null;
+    meetingElapsed = meetingStart ? (Date.now() - meetingStart + meetingElapsed) : meetingElapsed;
+    meetingStart = 0;
+    updateTimeDisplay();
+    const duration = formatTime(meetingElapsed);
+    btn.textContent = 'Start Meeting';
+    btn.classList.add('primary'); btn.classList.remove('ghost');
+    alert('Meeting ended — duration: ' + duration);
+    // reset elapsed for next meeting
+    meetingElapsed = 0;
+  }
+}
+
+on('startMeetingBtn','click', toggleMeeting);
+on('timePlay','click', ()=>{ if(!meetingInterval){ meetingStart = Date.now(); meetingInterval = setInterval(updateTimeDisplay,500); } });
+on('timePause','click', ()=>{ if(meetingInterval){ clearInterval(meetingInterval); meetingInterval = null; meetingElapsed = meetingStart ? (Date.now()-meetingStart+meetingElapsed) : meetingElapsed; meetingStart = 0; updateTimeDisplay(); } });
+
+
+document.getElementById('addProjectBtn').addEventListener('click', ()=>{
+  document.getElementById('projectModalTitle').textContent='New project';
+  document.getElementById('projectId').value='';
+  document.getElementById('pName').value='';
+  document.getElementById('pDesc').value='';
+  document.getElementById('projectOverlay').classList.add('open');
+  document.getElementById('pName').focus();
+});
+document.getElementById('projectCancel').addEventListener('click', ()=> document.getElementById('projectOverlay').classList.remove('open'));
+document.getElementById('projectSave').addEventListener('click', ()=>{
+  const name = document.getElementById('pName').value.trim(); if(!name) { document.getElementById('pName').focus(); return; }
+  const id = document.getElementById('projectId').value || ('p'+Date.now());
+  const desc = document.getElementById('pDesc').value.trim();
+  const ex = projects.find(x=>x.id===id);
+  if(ex){ Object.assign(ex,{name,desc}); } else { projects.push({id,name,desc,status:'active'}); }
+  saveProjects(); renderProjects(); document.getElementById('projectOverlay').classList.remove('open');
+});
+
+document.getElementById('newProjectSmall').addEventListener('click', ()=> document.getElementById('addProjectBtn').click());
+
+
+// Import JSON file (expects {tasks:[], projects:[]})
+document.getElementById('importBtn').addEventListener('click', ()=> document.getElementById('importFile').click());
+document.getElementById('importFile').addEventListener('change', e=>{
+  const f = e.target.files && e.target.files[0]; if(!f) return;
+  const rdr = new FileReader(); rdr.onload = ()=>{
+    try{
+      const obj = JSON.parse(rdr.result);
+      if(Array.isArray(obj.tasks)){ tasks = tasks.concat(obj.tasks.map(t=>({id:uid(),...t}))); saveTasks(); }
+      if(Array.isArray(obj.projects)){ projects = projects.concat(obj.projects.map(p=>({id:(p.id||'p'+Date.now()+Math.random().toString(36).slice(2,5)),...p}))); saveProjects(); }
+      render(); renderProjects(); alert('Import complete');
+    }catch(err){ alert('Import failed: invalid JSON'); }
+  };
+  rdr.readAsText(f);
+  e.target.value='';
+});
+
+// Nav switching: show projects view
+document.querySelectorAll('.nav-item').forEach(n=> n.addEventListener('click', ()=>{
+  document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
+  n.classList.add('active');
+  const t = n.textContent.trim().toLowerCase();
+  if(t==='projects'){
+    document.querySelector('.board-panel').style.display='none'; document.getElementById('projectsList').style.display='block';
+  } else {
+    document.querySelector('.board-panel').style.display='block'; document.getElementById('projectsList').style.display='none';
+  }
+}));
+
+// initialize projects
+loadProjects(); renderProjects();
+renderMiniProjectList();
+
 </script>
 </body>
 </html>
