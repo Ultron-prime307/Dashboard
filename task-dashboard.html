@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Ledger — Task Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#14181C;
+    --panel:#1B2127;
+    --panel-edge:#262E36;
+    --paper:#F3EEE3;
+    --paper-dim:#E8E1D2;
+    --amber:#E1A34A;
+    --teal:#5FA8A0;
+    --clay:#C4676B;
+    --sage:#8FA98C;
+    --muted:#8B929B;
+    --text-on-panel:#EDEAE2;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--ink);
+    color:var(--text-on-panel);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+  }
+  .wrap{max-width:1400px;margin:0 auto;padding:28px 32px 60px;}
+
+  /* Header */
+  header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:26px;flex-wrap:wrap;gap:16px;border-bottom:1px solid var(--panel-edge);padding-bottom:20px;}
+  .brand{display:flex;align-items:baseline;gap:14px;}
+  .brand h1{font-family:'Fraunces',serif;font-weight:700;font-size:34px;margin:0;letter-spacing:-0.5px;}
+  .brand .stamp{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);border:1px solid var(--panel-edge);padding:3px 8px;border-radius:20px;letter-spacing:0.5px;}
+  .header-actions{display:flex;gap:10px;align-items:center;}
+  input[type="text"], select, input[type="date"]{
+    background:var(--panel);
+    border:1px solid var(--panel-edge);
+    color:var(--text-on-panel);
+    padding:9px 12px;
+    border-radius:6px;
+    font-family:'Inter',sans-serif;
+    font-size:13px;
+  }
+  input[type="text"]:focus, select:focus, input[type="date"]:focus{outline:2px solid var(--amber);outline-offset:1px;}
+  .btn{
+    background:var(--amber);
+    color:#241A0A;
+    border:none;
+    padding:10px 16px;
+    border-radius:6px;
+    font-weight:600;
+    font-size:13px;
+    cursor:pointer;
+    font-family:'Inter',sans-serif;
+  }
+  .btn:hover{filter:brightness(1.08);}
+  .btn.ghost{background:transparent;border:1px solid var(--panel-edge);color:var(--text-on-panel);}
+  .btn.ghost:hover{border-color:var(--muted);}
+
+  /* Layout */
+  .layout{display:grid;grid-template-columns:220px 1fr;gap:24px;}
+  @media (max-width:900px){.layout{grid-template-columns:1fr;}}
+
+  /* Sidebar / Ledger stats */
+  .ledger{background:var(--panel);border:1px solid var(--panel-edge);border-radius:10px;padding:18px;height:fit-content;}
+  .ledger h3{font-family:'Fraunces',serif;font-size:15px;margin:0 0 14px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:600;}
+  .stat-row{display:flex;justify-content:space-between;align-items:baseline;padding:9px 0;border-bottom:1px dashed var(--panel-edge);font-family:'IBM Plex Mono',monospace;font-size:13px;}
+  .stat-row:last-child{border-bottom:none;}
+  .stat-row .n{font-size:20px;font-weight:600;color:var(--paper);}
+  .stat-row.overdue .n{color:var(--clay);}
+  .stat-row.done .n{color:var(--sage);}
+  .filter-group{margin-top:20px;display:flex;flex-direction:column;gap:8px;}
+  .filter-group label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;}
+
+  /* Board */
+  .board{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+  @media (max-width:1100px){.board{grid-template-columns:repeat(2,1fr);}}
+  @media (max-width:600px){.board{grid-template-columns:1fr;}}
+
+  .lane{background:var(--panel);border:1px solid var(--panel-edge);border-radius:10px;padding:14px;min-height:200px;display:flex;flex-direction:column;}
+  .lane.drag-over{outline:2px dashed var(--amber);outline-offset:-4px;}
+  .lane-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:10px;border-bottom:2px solid var(--panel-edge);}
+  .lane-head h2{font-family:'Fraunces',serif;font-size:15px;margin:0;letter-spacing:0.3px;}
+  .lane-head .count{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);background:var(--ink);padding:2px 8px;border-radius:10px;}
+  .cards{display:flex;flex-direction:column;gap:10px;flex:1;}
+
+  /* Task Card — index card motif */
+  .card{
+    background:var(--paper);
+    color:#20241F;
+    border-radius:3px;
+    padding:14px 14px 12px;
+    position:relative;
+    cursor:grab;
+    box-shadow:0 1px 0 rgba(0,0,0,0.15), 0 4px 10px rgba(0,0,0,0.25);
+    border-top:3px dashed #C9BFA9;
+  }
+  .card:active{cursor:grabbing;}
+  .card::before{
+    content:'';
+    position:absolute;top:-3px;left:16px;
+    width:6px;height:6px;border-radius:50%;
+    background:var(--panel);border:2px solid #C9BFA9;
+  }
+  .card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px;}
+  .card-title{font-weight:600;font-size:14px;line-height:1.35;font-family:'Inter',sans-serif;}
+  .card-desc{font-size:12.5px;color:#5B5748;margin:4px 0 10px;line-height:1.4;}
+  .card-meta{display:flex;justify-content:space-between;align-items:center;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#6B6656;flex-wrap:wrap;gap:6px;}
+  .tag{background:#00000010;padding:2px 7px;border-radius:10px;font-size:10.5px;}
+  .priority-stamp{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:9.5px;
+    font-weight:600;
+    letter-spacing:0.8px;
+    text-transform:uppercase;
+    padding:3px 7px;
+    border-radius:3px;
+    border:1.5px solid currentColor;
+    transform:rotate(-3deg);
+    white-space:nowrap;
+  }
+  .priority-high{color:var(--clay);}
+  .priority-medium{color:#A97C2E;}
+  .priority-low{color:var(--teal);}
+  .due{padding:2px 6px;border-radius:4px;}
+  .due.overdue{background:var(--clay);color:#fff;}
+  .card-actions{display:flex;gap:6px;margin-top:10px;}
+  .icon-btn{background:none;border:none;cursor:pointer;font-size:13px;color:#8a8574;padding:2px 4px;}
+  .icon-btn:hover{color:#3a3628;}
+  .empty-hint{color:var(--muted);font-size:12px;font-family:'IBM Plex Mono',monospace;text-align:center;padding:20px 4px;border:1px dashed var(--panel-edge);border-radius:6px;}
+
+  /* Modal */
+  .overlay{position:fixed;inset:0;background:rgba(10,12,14,0.7);display:none;align-items:center;justify-content:center;z-index:50;}
+  .overlay.open{display:flex;}
+  .modal{background:var(--panel);border:1px solid var(--panel-edge);border-radius:12px;padding:26px;width:420px;max-width:92vw;}
+  .modal h3{font-family:'Fraunces',serif;margin:0 0 16px;font-size:19px;}
+  .field{margin-bottom:12px;display:flex;flex-direction:column;gap:5px;}
+  .field label{font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);}
+  .field input, .field select, .field textarea{width:100%;}
+  textarea{background:var(--panel);border:1px solid var(--panel-edge);color:var(--text-on-panel);padding:9px 12px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;resize:vertical;min-height:60px;}
+  .field-row{display:flex;gap:10px;}
+  .field-row .field{flex:1;}
+  .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px;}
+  .loading{text-align:center;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:12px;padding:40px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <h1>Ledger</h1>
+      <span class="stamp">TASK BOARD · No. 001</span>
+    </div>
+    <div class="header-actions">
+      <input type="text" id="searchInput" placeholder="Search tasks…" style="width:180px;">
+      <button class="btn" id="newTaskBtn">+ New task</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="ledger">
+      <h3>Overview</h3>
+      <div class="stat-row"><span>Total tasks</span><span class="n" id="statTotal">0</span></div>
+      <div class="stat-row done"><span>Completed</span><span class="n" id="statDone">0</span></div>
+      <div class="stat-row overdue"><span>Overdue</span><span class="n" id="statOverdue">0</span></div>
+      <div class="stat-row"><span>High priority</span><span class="n" id="statHigh">0</span></div>
+
+      <div class="filter-group">
+        <label>Filter by priority</label>
+        <select id="priorityFilter">
+          <option value="all">All priorities</option>
+          <option value="high">High</option>
+          <option value="medium">Medium</option>
+          <option value="low">Low</option>
+        </select>
+        <label style="margin-top:6px;">Filter by tag</label>
+        <select id="tagFilter"><option value="all">All tags</option></select>
+        <button class="btn ghost" id="clearFilters" style="margin-top:8px;">Clear filters</button>
+      </div>
+    </aside>
+
+    <main>
+      <div class="board" id="board"></div>
+    </main>
+  </div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h3 id="modalTitle">New task</h3>
+    <input type="hidden" id="editId">
+    <div class="field">
+      <label>Title</label>
+      <input type="text" id="fTitle" placeholder="e.g. Draft Q3 roadmap">
+    </div>
+    <div class="field">
+      <label>Description</label>
+      <textarea id="fDesc" placeholder="Optional details…"></textarea>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Priority</label>
+        <select id="fPriority">
+          <option value="medium">Medium</option>
+          <option value="high">High</option>
+          <option value="low">Low</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Due date</label>
+        <input type="date" id="fDue">
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Assignee</label>
+        <input type="text" id="fAssignee" placeholder="e.g. Priya">
+      </div>
+      <div class="field">
+        <label>Tag</label>
+        <input type="text" id="fTag" placeholder="e.g. design">
+      </div>
+    </div>
+    <div class="field">
+      <label>Status</label>
+      <select id="fStatus">
+        <option value="backlog">Backlog</option>
+        <option value="progress">In progress</option>
+        <option value="review">Review</option>
+        <option value="done">Done</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn ghost" id="cancelBtn">Cancel</button>
+      <button class="btn" id="saveBtn">Save task</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const LANES = [
+  {id:'backlog', label:'Backlog'},
+  {id:'progress', label:'In Progress'},
+  {id:'review', label:'Review'},
+  {id:'done', label:'Done'},
+];
+
+let tasks = [];
+let editingId = null;
+
+function uid(){ return 't' + Date.now() + Math.random().toString(36).slice(2,7); }
+
+async function loadTasks(){
+  try{
+    let stored = null;
+    if (window.storage && typeof window.storage.get === 'function') {
+      const res = await window.storage.get('tasks', false);
+      stored = res && res.value ? JSON.parse(res.value) : null;
+    } else {
+      const raw = window.localStorage.getItem('ledger-tasks');
+      stored = raw ? JSON.parse(raw) : null;
+    }
+    tasks = Array.isArray(stored) && stored.length ? stored : seedTasks();
+  } catch(e){
+    try {
+      const raw = window.localStorage.getItem('ledger-tasks');
+      tasks = raw ? JSON.parse(raw) : seedTasks();
+    } catch (fallbackError) {
+      tasks = seedTasks();
+    }
+  }
+  render();
+}
+
+function seedTasks(){
+  const today = new Date();
+  const iso = (d)=> d.toISOString().slice(0,10);
+  const plus = (n)=> { const d = new Date(today); d.setDate(d.getDate()+n); return iso(d); };
+  return [
+    {id:uid(), title:'Wireframe onboarding flow', desc:'Sketch the first-run experience for new users.', priority:'high', due:plus(2), assignee:'Priya', tag:'design', status:'progress'},
+    {id:uid(), title:'Fix invoice rounding bug', desc:'Totals are off by a cent on split payments.', priority:'high', due:plus(-1), assignee:'Sam', tag:'bug', status:'backlog'},
+    {id:uid(), title:'Write Q3 roadmap doc', desc:'', priority:'medium', due:plus(5), assignee:'Priya', tag:'planning', status:'backlog'},
+    {id:uid(), title:'Review pull request #221', desc:'Auth refactor, needs a second pair of eyes.', priority:'medium', due:plus(1), assignee:'Marco', tag:'engineering', status:'review'},
+    {id:uid(), title:'Ship dark mode toggle', desc:'', priority:'low', due:plus(7), assignee:'Sam', tag:'engineering', status:'done'},
+  ];
+}
+
+async function saveTasks(){
+  try {
+    if (window.storage && typeof window.storage.set === 'function') {
+      await window.storage.set('tasks', JSON.stringify(tasks), false);
+    } else {
+      window.localStorage.setItem('ledger-tasks', JSON.stringify(tasks));
+    }
+  } catch(e){
+    console.error('save failed', e);
+    try {
+      window.localStorage.setItem('ledger-tasks', JSON.stringify(tasks));
+    } catch (fallbackError) {
+      console.error('fallback save failed', fallbackError);
+    }
+  }
+}
+
+function fmtDate(iso){
+  if(!iso) return '';
+  const d = new Date(iso+'T00:00:00');
+  return d.toLocaleDateString(undefined,{month:'short',day:'numeric'});
+}
+function isOverdue(t){
+  if(!t.due || t.status==='done') return false;
+  return new Date(t.due+'T00:00:00') < new Date(new Date().toDateString());
+}
+
+function currentFilters(){
+  return {
+    q: document.getElementById('searchInput').value.trim().toLowerCase(),
+    priority: document.getElementById('priorityFilter').value,
+    tag: document.getElementById('tagFilter').value,
+  };
+}
+
+function populateTagFilter(){
+  const sel = document.getElementById('tagFilter');
+  const cur = sel.value;
+  const tags = [...new Set(tasks.map(t=>t.tag).filter(Boolean))].sort();
+  sel.innerHTML = '<option value="all">All tags</option>' + tags.map(t=>`<option value="${t}">${t}</option>`).join('');
+  if(tags.includes(cur)) sel.value = cur;
+}
+
+function render(){
+  populateTagFilter();
+  const f = currentFilters();
+  const board = document.getElementById('board');
+  board.innerHTML = '';
+
+  const filtered = tasks.filter(t=>{
+    if(f.q && !(t.title.toLowerCase().includes(f.q) || (t.desc||'').toLowerCase().includes(f.q))) return false;
+    if(f.priority!=='all' && t.priority!==f.priority) return false;
+    if(f.tag!=='all' && t.tag!==f.tag) return false;
+    return true;
+  });
+
+  LANES.forEach(lane=>{
+    const laneEl = document.createElement('div');
+    laneEl.className = 'lane';
+    laneEl.dataset.lane = lane.id;
+    const laneTasks = filtered.filter(t=>t.status===lane.id);
+
+    laneEl.innerHTML = `
+      <div class="lane-head">
+        <h2>${lane.label}</h2>
+        <span class="count">${laneTasks.length}</span>
+      </div>
+      <div class="cards" data-lane="${lane.id}"></div>
+    `;
+
+    const cardsWrap = laneEl.querySelector('.cards');
+    if(laneTasks.length===0){
+      cardsWrap.innerHTML = `<div class="empty-hint">No tasks here</div>`;
+    } else {
+      laneTasks.forEach(t=> cardsWrap.appendChild(renderCard(t)));
+    }
+
+    laneEl.addEventListener('dragover', e=>{ e.preventDefault(); laneEl.classList.add('drag-over'); });
+    laneEl.addEventListener('dragleave', ()=> laneEl.classList.remove('drag-over'));
+    laneEl.addEventListener('drop', e=>{
+      e.preventDefault();
+      laneEl.classList.remove('drag-over');
+      const id = e.dataTransfer.getData('text/plain');
+      const task = tasks.find(x=>x.id===id);
+      if(task){ task.status = lane.id; saveTasks(); render(); }
+    });
+
+    board.appendChild(laneEl);
+  });
+
+  updateStats();
+}
+
+function renderCard(t){
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.draggable = true;
+  card.addEventListener('dragstart', e=> e.dataTransfer.setData('text/plain', t.id));
+
+  const overdue = isOverdue(t);
+  card.innerHTML = `
+    <div class="card-top">
+      <div class="card-title">${escapeHtml(t.title)}</div>
+      <span class="priority-stamp priority-${t.priority}">${t.priority}</span>
+    </div>
+    ${t.desc ? `<div class="card-desc">${escapeHtml(t.desc)}</div>` : ''}
+    <div class="card-meta">
+      <span>${t.assignee ? '@'+escapeHtml(t.assignee) : ''}</span>
+      <span>
+        ${t.tag ? `<span class="tag">${escapeHtml(t.tag)}</span>` : ''}
+        ${t.due ? `<span class="due ${overdue?'overdue':''}">${overdue?'⚠ ':''}${fmtDate(t.due)}</span>` : ''}
+      </span>
+    </div>
+    <div class="card-actions">
+      <button class="icon-btn" data-act="edit">Edit</button>
+      <button class="icon-btn" data-act="del">Delete</button>
+    </div>
+  `;
+  card.querySelector('[data-act="edit"]').addEventListener('click', ()=> openModal(t));
+  card.querySelector('[data-act="del"]').addEventListener('click', ()=>{
+    tasks = tasks.filter(x=>x.id!==t.id);
+    saveTasks(); render();
+  });
+  return card;
+}
+
+function escapeHtml(s){
+  return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function updateStats(){
+  document.getElementById('statTotal').textContent = tasks.length;
+  document.getElementById('statDone').textContent = tasks.filter(t=>t.status==='done').length;
+  document.getElementById('statOverdue').textContent = tasks.filter(isOverdue).length;
+  document.getElementById('statHigh').textContent = tasks.filter(t=>t.priority==='high' && t.status!=='done').length;
+}
+
+function openModal(task){
+  editingId = task ? task.id : null;
+  document.getElementById('modalTitle').textContent = task ? 'Edit task' : 'New task';
+  document.getElementById('fTitle').value = task ? task.title : '';
+  document.getElementById('fDesc').value = task ? task.desc||'' : '';
+  document.getElementById('fPriority').value = task ? task.priority : 'medium';
+  document.getElementById('fDue').value = task ? task.due||'' : '';
+  document.getElementById('fAssignee').value = task ? task.assignee||'' : '';
+  document.getElementById('fTag').value = task ? task.tag||'' : '';
+  document.getElementById('fStatus').value = task ? task.status : 'backlog';
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('fTitle').focus();
+}
+function closeModal(){ document.getElementById('overlay').classList.remove('open'); }
+
+document.getElementById('newTaskBtn').addEventListener('click', ()=> openModal(null));
+document.getElementById('cancelBtn').addEventListener('click', closeModal);
+document.getElementById('overlay').addEventListener('click', e=>{ if(e.target.id==='overlay') closeModal(); });
+
+document.getElementById('saveBtn').addEventListener('click', ()=>{
+  const title = document.getElementById('fTitle').value.trim();
+  if(!title){ document.getElementById('fTitle').focus(); return; }
+  const data = {
+    title,
+    desc: document.getElementById('fDesc').value.trim(),
+    priority: document.getElementById('fPriority').value,
+    due: document.getElementById('fDue').value,
+    assignee: document.getElementById('fAssignee').value.trim(),
+    tag: document.getElementById('fTag').value.trim(),
+    status: document.getElementById('fStatus').value,
+  };
+  if(editingId){
+    const t = tasks.find(x=>x.id===editingId);
+    Object.assign(t, data);
+  } else {
+    tasks.push({id:uid(), ...data});
+  }
+  saveTasks();
+  closeModal();
+  render();
+});
+
+document.getElementById('searchInput').addEventListener('input', render);
+document.getElementById('priorityFilter').addEventListener('change', render);
+document.getElementById('tagFilter').addEventListener('change', render);
+document.getElementById('clearFilters').addEventListener('click', ()=>{
+  document.getElementById('searchInput').value = '';
+  document.getElementById('priorityFilter').value = 'all';
+  document.getElementById('tagFilter').value = 'all';
+  render();
+});
+
+loadTasks();
+</script>
+</body>
+</html>
